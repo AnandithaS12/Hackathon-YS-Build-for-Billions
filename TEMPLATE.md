@@ -55,21 +55,19 @@ This list is why you never need to read `package.json` or list `node_modules`.
 | Path | Purpose |
 |---|---|
 | `backend/server.py` | FastAPI bootstrap: `app = FastAPI()`, `api_router = APIRouter(prefix="/api")`, routes registered on the **router**, `app.include_router(api_router)` last. `status` is the pattern to copy |
-| `backend/lib/db.py` | ships the motor client + `db` handle and self-loads `.env`; import it from `server.py` *and* every router — defining `db` in `server.py` and importing it back is a circular import |
+| `backend/lib/db.py` | ships the motor client + `db` handle and self-loads the backend environment config; import it from `server.py` *and* every router — defining `db` in `server.py` and importing it back is a circular import |
 | `backend/models/*.py` | Pydantic v2 request/response models once `server.py` gets crowded — package exists with `__init__.py`, just add modules |
 | `backend/routers/*.py` | one `APIRouter` per resource, mounted from `server.py` — package exists with `__init__.py`, just add modules |
 | `backend/seed.py` | **create this** for seed data; run `cd /app/backend && python seed.py`. Idempotent, not imported by `server.py`, and gets env + client via `from lib.db import db` |
 | `backend/lib/dates.py` | `today_iso(tz=None)` — server-side "today"; pod clock is UTC |
-| `backend/.env` | `MONGO_URL`, `DB_NAME`, `CORS_ORIGINS`; loaded by `python-dotenv`, read via `os.environ` |
+| `backend environment config` | `MONGO_URL`, `DB_NAME`, `CORS_ORIGINS`; loaded by `python-dotenv`, read via `os.environ` |
 | `frontend/src/main.tsx` | already mounts `StrictMode` + `QueryClientProvider` + `BrowserRouter` — never edit, and never re-add any of the three in `App.tsx` (a second Router breaks routing; `<Routes>` in `App.tsx` just works) |
 | `frontend/src/App.tsx` | the `<Routes>` table and nothing else — one `<Route>` per page, added in the same edit that creates the page. A page with no `<Route>` is unreachable, and any URL without a matching `<Route>` renders a **blank page** — `<Routes>` matches nothing and mounts nothing |
 | `frontend/src/pages/*.tsx` | one screen per file, default-exported, imported into `App.tsx` as `@/pages/<Name>`; `Home.tsx` ships as the worked example |
 | `frontend/src/lib/api.ts` | `apiGet/apiPost/apiPut/apiPatch/apiDelete<T>` over base `/api`, throwing `ApiError` |
 | `frontend/src/lib/utils.ts` | `cn()` |
 | `frontend/src/components/ui/` | shadcn `base-nova` on **@base-ui/react** (index in §11) |
-| `frontend/src/index.css` | Tailwind v4 entry + theme tokens (no `tailwind.config.js`) |
-| `memory/spec.md`, `memory/test_credentials.md` | write seed facts + credentials here before delegating — the testing subagent reads them first |
-| `backend/pytest.ini`, `backend/tests/`, `tests/` | pytest + Playwright scaffolding, pre-configured — don't edit or recreate; browser checks land in `.emergent/scripts/checks/` |
+
 ## 4. The typed-fetch boundary
 
 Nothing infers across Python↔TypeScript. Each endpoint has **two** declarations
@@ -221,7 +219,7 @@ and the hex values in `:root` + `.dark`; leave the other aliases and
 ## 10. Restart — after a config change only
 
 Both dev servers hot-reload (uvicorn `--reload`, Vite HMR). Restart ONLY after
-changing `.env`, `requirements.txt`, or `vite.config.ts` — never at session start.
+changing the backend environment config, `requirements.txt`, or `vite.config.ts` — never at session start.
 
 ```bash
 sudo supervisorctl restart frontend backend
@@ -238,14 +236,14 @@ rest-props = that primitive's props. Import from `@/components/ui/<file>`. Read
 | File | Exports — own props (defaults) |
 |---|---|
 | `badge.tsx` | `Badge` (span) `variant`: default \| secondary \| destructive \| outline \| ghost \| link; `badgeVariants` |
-| `button.tsx` | `Button` `variant`: default \| outline \| secondary \| ghost \| destructive \| link; `size`: default \| xs \| sm \| lg \| icon \| icon-xs \| icon-sm \| icon-lg; `buttonVariants` |
+| `button.tsx` | `Button` `variant`: default \| outline \| secondary \| ghost \| destructive \| link; `size`: default \| xs \| sm \| lg \| icon \| icon-xs \| icon-sm \| icon-lg; `buttonVariants` [...] |
 | `calendar.tsx` | `Calendar` (react-day-picker `DayPicker` props) + `buttonVariant` (ghost), `showOutsideDays` (true), `captionLayout` ("label"), `locale`; `CalendarDayButton` |
 | `card.tsx` | `Card` `size`: default \| sm; `CardHeader/Title/Description/Action/Content/Footer` (div props) |
 | `checkbox.tsx` | `Checkbox` = base-ui `Checkbox.Root` (`checked`, `defaultChecked`, `onCheckedChange`, `indeterminate`); indicator built in |
 | `dialog.tsx` | `Dialog`, `DialogTrigger/Portal/Close/Overlay/Title/Description`; `DialogContent` + `showCloseButton` (true); `DialogHeader`, `DialogFooter` |
-| `dropdown-menu.tsx` | `DropdownMenu` = base-ui `Menu.Root`; `…Trigger/Portal/Group/RadioGroup/Sub/SubTrigger/Separator/Label/Shortcut`; `…Content`, `…SubContent` (self-portal) + `align`, `alignOffset`, `side`, `sideOffset`; `…Item`/`…CheckboxItem`/`…RadioItem` + `inset`, `variant`: default \| destructive |
+| `dropdown-menu.tsx` | `DropdownMenu` = base-ui `Menu.Root`; `…Trigger/Portal/Group/RadioGroup/Sub/SubTrigger/Separator/Label/Shortcut`; `…Content`, `…SubContent` (self-portal) + `align`, [..] |
 | `input.tsx`, `label.tsx`, `textarea.tsx` | `Input` / `Label` / `Textarea` — plain element props |
-| `popover.tsx` | `Popover` = base-ui `Popover.Root`; `PopoverTrigger/Title/Description/Header`; `PopoverContent` (self-portals) + `align` ("center"), `alignOffset`, `side` ("bottom"), `sideOffset` (4) |
+| `popover.tsx` | `Popover` = base-ui `Popover.Root`; `PopoverTrigger/Title/Description/Header`; `PopoverContent` (self-portals) + `align` ("center"), `alignOffset`, `side` ("bottom"), `sideOffse[...]
 | `select.tsx` | `Select` (wrapped `Select.Root`), `SelectGroup/Value/Content/Label/Item/Separator/ScrollUpButton/ScrollDownButton`; `SelectTrigger` + `size`: sm \| default |
 | `sheet.tsx` | `Sheet`, `SheetTrigger/Close/Portal/Overlay/Title/Description/Header/Footer`; `SheetContent` + `side`: top \| right (default) \| bottom \| left, `showCloseButton` (true) |
 | `sonner.tsx` | `Toaster` — sonner `ToasterProps` (`position`, `richColors`, …), theme from `next-themes`. Mount once, then `toast()` from `sonner` |
