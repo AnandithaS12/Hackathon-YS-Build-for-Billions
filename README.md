@@ -1,5 +1,3 @@
-https://github.com/user-attachments/assets/5d5916a7-88dc-4467-b8f3-cbce26f64364
-
 # farm-ts
 
 Minimal split backend/frontend starter: **FastAPI + MongoDB** behind a
